@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IoT Brain Signal (EEG) Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root, [data-theme="dark"] {
+  --color-bg: #0b0d14;
+  --color-surface: #111420;
+  --color-surface-2: #161928;
+  --color-surface-offset: #1c2035;
+  --color-border: rgba(120,140,200,0.12);
+  --color-divider: rgba(120,140,200,0.08);
+  --color-text: #d8ddf0;
+  --color-text-muted: #7b85a8;
+  --color-text-faint: #404665;
+  --color-primary: #5b8fff;
+  --color-primary-glow: rgba(91,143,255,0.15);
+  --color-accent-green: #39e0a0;
+  --color-accent-green-glow: rgba(57,224,160,0.12);
+  --color-accent-purple: #a78bfa;
+  --color-accent-purple-glow: rgba(167,139,250,0.12);
+  --color-accent-orange: #fbbf24;
+  --color-accent-red: #f87171;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --font-body: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+[data-theme="light"] {
+  --color-bg: #f0f2f9;
+  --color-surface: #f7f8ff;
+  --color-surface-2: #ffffff;
+  --color-surface-offset: #e8eaf5;
+  --color-border: rgba(60,80,160,0.12);
+  --color-divider: rgba(60,80,160,0.08);
+  --color-text: #1a1d2e;
+  --color-text-muted: #5a608c;
+  --color-text-faint: #9aa0c0;
+  --color-primary: #2563eb;
+  --color-primary-glow: rgba(37,99,235,0.1);
+  --color-accent-green: #059669;
+  --color-accent-green-glow: rgba(5,150,105,0.1);
+  --color-accent-purple: #7c3aed;
+  --color-accent-purple-glow: rgba(124,58,237,0.1);
+  --color-accent-orange: #d97706;
+  --color-accent-red: #dc2626;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body { min-height: 100dvh; font-family: var(--font-body); font-size: 1rem; color: var(--color-text); background: var(--color-bg); line-height: 1.65; }
+a { color: var(--color-primary); text-decoration: none; }
+img { display: block; max-width: 100%; height: auto; }
+button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+
+/* LAYOUT */
+.app { display: flex; min-height: 100dvh; }
+.sidebar {
+  width: 260px; flex-shrink: 0; background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex; flex-direction: column;
+  position: sticky; top: 0; height: 100dvh; overflow-y: auto;
+  padding: 1.5rem 0 2rem;
+}
+.main { flex: 1; min-width: 0; padding: 0; }
+
+/* SIDEBAR */
+.logo-wrap { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--color-divider); margin-bottom: 1rem; }
+.logo { display: flex; align-items: center; gap: 0.75rem; }
+.logo-icon { width: 36px; height: 36px; flex-shrink: 0; }
+.logo-text { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
+.logo-sub { font-size: 0.7rem; color: var(--color-text-muted); font-weight: 400; letter-spacing: 0.05em; text-transform: uppercase; }
+.nav-section { padding: 0.25rem 0.75rem; margin-bottom: 0.25rem; }
+.nav-section-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-faint); font-weight: 600; padding: 0 0.75rem; margin-bottom: 0.25rem; }
+.nav-item { display: flex; align-items: center; gap: 0.625rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); color: var(--color-text-muted); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 180ms ease; border: none; background: none; width: 100%; text-align: left; }
+.nav-item:hover { color: var(--color-text); background: var(--color-surface-offset); }
+.nav-item.active { color: var(--color-primary); background: var(--color-primary-glow); }
+.nav-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.sidebar-footer { margin-top: auto; padding: 1rem 1.5rem 0; border-top: 1px solid var(--color-divider); }
+.theme-toggle { display: flex; align-items: center; gap: 0.5rem; color: var(--color-text-muted); font-size: 0.8rem; padding: 0.5rem 0; cursor: pointer; }
+.theme-toggle svg { flex-shrink: 0; }
+
+/* HERO */
+.hero {
+  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg) 60%);
+  border-bottom: 1px solid var(--color-border);
+  padding: 3.5rem 3rem 2.5rem;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ""; position: absolute; top: -80px; right: -80px;
+  width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, var(--color-primary-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--color-primary-glow); border: 1px solid rgba(91,143,255,0.2); color: var(--color-primary); border-radius: 999px; padding: 0.3rem 0.9rem; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em; margin-bottom: 1rem; text-transform: uppercase; }
+.hero-title { font-size: clamp(1.75rem, 3vw, 2.75rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 1rem; }
+.hero-title span { color: var(--color-primary); }
+.hero-desc { font-size: 1.05rem; color: var(--color-text-muted); max-width: 60ch; line-height: 1.7; margin-bottom: 1.5rem; }
+.hero-stats { display: flex; gap: 2rem; flex-wrap: wrap; }
+.stat { text-align: center; }
+.stat-num { font-size: 1.4rem; font-weight: 700; color: var(--color-text); }
+.stat-label { font-size: 0.7rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* CONTENT */
+.content { padding: 2rem 3rem 4rem; max-width: 1100px; }
+.section { margin-bottom: 3.5rem; scroll-margin-top: 1rem; }
+.section-header { margin-bottom: 1.5rem; }
+.section-eyebrow { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-primary); font-weight: 600; margin-bottom: 0.4rem; }
+.section-title { font-size: clamp(1.2rem, 2vw, 1.6rem); font-weight: 700; letter-spacing: -0.01em; }
+.section-desc { color: var(--color-text-muted); font-size: 0.95rem; margin-top: 0.5rem; max-width: 65ch; }
+
+/* PIPELINE */
+.pipeline { display: flex; align-items: center; gap: 0; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 2rem; }
+.pipe-step { flex-shrink: 0; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; min-width: 130px; text-align: center; position: relative; }
+.pipe-step-num { font-size: 0.65rem; color: var(--color-text-faint); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+.pipe-step-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+.pipe-step-label { font-size: 0.8rem; font-weight: 600; color: var(--color-text); }
+.pipe-arrow { color: var(--color-text-faint); padding: 0 0.4rem; font-size: 1.2rem; flex-shrink: 0; }
+
+/* CARDS */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.5rem; transition: all 220ms ease; }
+.card:hover { border-color: rgba(91,143,255,0.25); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.card-icon { width: 42px; height: 42px; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 1rem; }
+.card-icon.blue { background: var(--color-primary-glow); }
+.card-icon.green { background: var(--color-accent-green-glow); }
+.card-icon.purple { background: var(--color-accent-purple-glow); }
+.card-icon.orange { background: rgba(251,191,36,0.1); }
+.card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
+.card-body { font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.65; }
+.card-tags { display: flex; flex-wrap: wrap; gap: 0.375rem; margin-top: 0.875rem; }
+.tag { font-size: 0.68rem; padding: 0.2rem 0.55rem; border-radius: 999px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; }
+.tag.blue { background: var(--color-primary-glow); color: var(--color-primary); border: 1px solid rgba(91,143,255,0.2); }
+.tag.green { background: var(--color-accent-green-glow); color: var(--color-accent-green); border: 1px solid rgba(57,224,160,0.2); }
+.tag.purple { background: var(--color-accent-purple-glow); color: var(--color-accent-purple); border: 1px solid rgba(167,139,250,0.2); }
+.tag.orange { background: rgba(251,191,36,0.1); color: var(--color-accent-orange); border: 1px solid rgba(251,191,36,0.2); }
+
+/* WAVE BANDS TABLE */
+.bands-table { width: 100%; border-collapse: collapse; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--color-border); }
+.bands-table th { background: var(--color-surface-offset); padding: 0.75rem 1rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); font-weight: 600; text-align: left; }
+.bands-table td { padding: 0.875rem 1rem; font-size: 0.875rem; border-top: 1px solid var(--color-divider); vertical-align: middle; }
+.bands-table tr:hover td { background: var(--color-surface); }
+.band-color { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 0.5rem; }
+.band-name { font-weight: 600; }
+
+/* CODE BLOCK */
+.code-block { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; margin: 1rem 0; }
+.code-header { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 1rem; background: var(--color-surface-offset); border-bottom: 1px solid var(--color-border); }
+.code-lang { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); }
+.copy-btn { font-size: 0.72rem; color: var(--color-text-faint); cursor: pointer; display: flex; align-items: center; gap: 0.3rem; transition: color 180ms ease; }
+.copy-btn:hover { color: var(--color-primary); }
+pre { padding: 1.25rem 1rem; overflow-x: auto; }
+code { font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.7; color: var(--color-text); }
+.kw { color: #a78bfa; } .fn { color: #5b8fff; } .str { color: #39e0a0; } .cm { color: #404665; } .num { color: #fbbf24; }
+
+/* BRAINWAVE VISUALIZER */
+.wave-viz { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.5rem; margin-bottom: 1.5rem; }
+.wave-title { font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.waves-container { display: flex; flex-direction: column; gap: 0.75rem; }
+.wave-row { display: flex; align-items: center; gap: 1rem; }
+.wave-label { width: 80px; font-size: 0.78rem; font-weight: 600; flex-shrink: 0; }
+.wave-canvas-wrap { flex: 1; height: 36px; position: relative; }
+canvas.wave-line { width: 100%; height: 100%; }
+.wave-info { width: 120px; font-size: 0.72rem; color: var(--color-text-muted); flex-shrink: 0; text-align: right; }
+
+/* APP CARDS */
+.app-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+.app-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; transition: all 220ms ease; }
+.app-card:hover { border-color: rgba(91,143,255,0.2); transform: translateY(-1px); }
+.app-card-top { display: flex; align-items: center; gap: 0.75rem; }
+.app-emoji { font-size: 1.5rem; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: var(--color-surface-offset); border-radius: var(--radius-lg); flex-shrink: 0; }
+.app-name { font-size: 0.9rem; font-weight: 700; }
+.app-desc { font-size: 0.82rem; color: var(--color-text-muted); line-height: 1.6; }
+.app-diff { font-size: 0.68rem; padding: 0.15rem 0.5rem; border-radius: 999px; font-weight: 600; }
+.diff-easy { background: var(--color-accent-green-glow); color: var(--color-accent-green); }
+.diff-med { background: rgba(251,191,36,0.1); color: var(--color-accent-orange); }
+.diff-hard { background: rgba(248,113,113,0.1); color: var(--color-accent-red); }
+
+/* STEPS */
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step { display: flex; gap: 1.25rem; padding: 1.25rem 0; border-bottom: 1px solid var(--color-divider); }
+.step:last-child { border-bottom: none; }
+.step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary-glow); border: 1px solid rgba(91,143,255,0.3); color: var(--color-primary); font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-content { flex: 1; }
+.step-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.35rem; }
+.step-body { font-size: 0.86rem; color: var(--color-text-muted); line-height: 1.65; }
+
+/* TOOLS TABLE */
+.tools-table { width: 100%; border-collapse: collapse; }
+.tools-table th { padding: 0.6rem 0.875rem; text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-faint); border-bottom: 1px solid var(--color-border); }
+.tools-table td { padding: 0.75rem 0.875rem; font-size: 0.85rem; border-bottom: 1px solid var(--color-divider); vertical-align: top; }
+.tools-table tr:last-child td { border-bottom: none; }
+.tool-name { font-weight: 600; color: var(--color-text); }
+.tool-type { font-size: 0.7rem; color: var(--color-text-muted); margin-top: 0.15rem; }
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .hero { padding: 2rem 1.5rem; }
+  .content { padding: 1.5rem; }
+  .hero-stats { gap: 1.25rem; }
+  .pipeline { gap: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="logo-wrap">
+    <div class="logo">
+      <svg class="logo-icon" viewBox="0 0 36 36" fill="none">
+        <rect width="36" height="36" rx="8" fill="#5b8fff" fill-opacity="0.15"/>
+        <circle cx="18" cy="18" r="6" stroke="#5b8fff" stroke-width="1.5" fill="none"/>
+        <path d="M4 18 Q8 11 12 18 Q16 25 18 18 Q20 11 24 18 Q28 25 32 18" stroke="#39e0a0" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="18" cy="18" r="2" fill="#5b8fff"/>
+      </svg>
+      <div>
+        <div class="logo-text">NeuroIoT</div>
+        <div class="logo-sub">Brain Signal Guide</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 0 0.75rem; display: flex; flex-direction: column; gap: 0.125rem;">
+    <div class="nav-section-label" style="padding: 0.5rem 0.75rem 0.25rem;">Navigation</div>
+    <button class="nav-item active" onclick="scrollTo('overview')"><span class="nav-dot"></span>Overview</button>
+    <button class="nav-item" onclick="scrollTo('hardware')"><span class="nav-dot"></span>Hardware</button>
+    <button class="nav-item" onclick="scrollTo('pipeline')"><span class="nav-dot"></span>Pipeline</button>
+    <button class="nav-item" onclick="scrollTo('brainwaves')"><span class="nav-dot"></span>Brainwave Bands</button>
+    <button class="nav-item" onclick="scrollTo('preprocessing')"><span class="nav-dot"></span>Preprocessing</button>
+    <button class="nav-item" onclick="scrollTo('ml')"><span class="nav-dot"></span>ML & Analysis</button>
+    <button class="nav-item" onclick="scrollTo('applications')"><span class="nav-dot"></span>Applications</button>
+    <button class="nav-item" onclick="scrollTo('tools')"><span class="nav-dot"></span>Software Tools</button>
+    <button class="nav-item" onclick="scrollTo('code')"><span class="nav-dot"></span>Sample Code</button>
+    <button class="nav-item" onclick="scrollTo('roadmap')"><span class="nav-dot"></span>Roadmap</button>
+  </div>
+
+  <div class="sidebar-footer">
+    <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <span style="font-size:0.8rem">Toggle Theme</span>
+    </button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">
+    <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="currentColor"/></svg>
+    Brain-Computer Interface + IoT
+  </div>
+  <h1 class="hero-title">IoT <span>Brain Signal</span><br>Complete Guide</h1>
+  <p class="hero-desc">Build an end-to-end EEG data collection and analysis system — from selecting sensors and microcontrollers to preprocessing, machine learning, and real-world applications.</p>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">4</div><div class="stat-label">System Layers</div></div>
+    <div class="stat"><div class="stat-num">5</div><div class="stat-label">Brainwave Bands</div></div>
+    <div class="stat"><div class="stat-num">6+</div><div class="stat-label">Applications</div></div>
+    <div class="stat"><div class="stat-num">10+</div><div class="stat-label">Tools Listed</div></div>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- OVERVIEW -->
+<div class="section" id="overview">
+  <div class="section-header">
+    <div class="section-eyebrow">01 — Overview</div>
+    <div class="section-title">System Architecture</div>
+    <div class="section-desc">A complete IoT EEG system has 4 core layers. Each feeds into the next.</div>
+  </div>
+
+  <div class="pipeline">
+    <div class="pipe-step">
+      <div class="pipe-step-num">Step 1</div>
+      <div class="pipe-step-icon">🧠</div>
+      <div class="pipe-step-label">Brain Signal Acquisition</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="pipe-step-num">Step 2</div>
+      <div class="pipe-step-icon">📡</div>
+      <div class="pipe-step-label">IoT Transmission</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="pipe-step-num">Step 3</div>
+      <div class="pipe-step-icon">⚙️</div>
+      <div class="pipe-step-label">Signal Processing</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="pipe-step-num">Step 4</div>
+      <div class="pipe-step-icon">🤖</div>
+      <div class="pipe-step-label">ML Analysis</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="pipe-step-num">Output</div>
+      <div class="pipe-step-icon">💡</div>
+      <div class="pipe-step-label">Actionable Insight</div>
+    </div>
+  </div>
+</div>
+
+<!-- HARDWARE -->
+<div class="section" id="hardware">
+  <div class="section-header">
+    <div class="section-eyebrow">02 — Hardware</div>
+    <div class="section-title">Sensors & Microcontrollers</div>
+    <div class="section-desc">Choose your EEG sensor and IoT node based on cost, channel count, and use case.</div>
+  </div>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon blue">🎧</div>
+      <div class="card-title">NeuroSky MindWave</div>
+      <div class="card-body">Single-channel, dry electrode EEG headset. Perfect for beginners. Outputs raw EEG + pre-computed attention/meditation scores via Bluetooth at 247 Hz.</div>
+      <div class="card-tags"><span class="tag green">Beginner</span><span class="tag blue">$99</span><span class="tag orange">BT 2.1</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon green">🧩</div>
+      <div class="card-title">OpenBCI Cyton</div>
+      <div class="card-body">8-channel, 24-bit ADS1299 ADC. Research-grade hardware with open-source firmware. Compatible with wet and dry electrodes. 250 Hz sample rate.</div>
+      <div class="card-tags"><span class="tag orange">Intermediate</span><span class="tag blue">$499</span><span class="tag green">Open Source</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon purple">🎵</div>
+      <div class="card-title">Muse 2 Headband</div>
+      <div class="card-body">4-channel consumer headband with accelerometer, gyroscope, PPG. Excellent for meditation, focus monitoring. Streams via BLE to iOS/Android.</div>
+      <div class="card-tags"><span class="tag green">Beginner</span><span class="tag blue">$249</span><span class="tag purple">BLE</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon orange">⚡</div>
+      <div class="card-title">ESP32 (IoT Node)</div>
+      <div class="card-body">Your IoT bridge. Dual-core 240 MHz, built-in Wi-Fi & BLE, 520KB SRAM. Hosts a lightweight preprocessor and publishes data via MQTT or HTTP.</div>
+      <div class="card-tags"><span class="tag green">Recommended</span><span class="tag blue">~$5</span><span class="tag orange">Wi-Fi + BLE</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon blue">🍓</div>
+      <div class="card-title">Raspberry Pi Zero 2W</div>
+      <div class="card-body">Full Linux board, 512MB RAM. Can run Python preprocessing on-device, including bandpass filters and FFT band power extraction in real-time.</div>
+      <div class="card-tags"><span class="tag orange">Intermediate</span><span class="tag blue">~$15</span><span class="tag purple">Linux</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon green">📶</div>
+      <div class="card-title">MQTT + Cloud Platform</div>
+      <div class="card-body">Use MQTT broker (Mosquitto, HiveMQ) to stream EEG data to AWS IoT Core, Google Cloud IoT, or a local Flask server for real-time dashboards.</div>
+      <div class="card-tags"><span class="tag purple">Protocol</span><span class="tag blue">MQTT 3.1</span><span class="tag green">Cloud</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- BRAINWAVES -->
+<div class="section" id="brainwaves">
+  <div class="section-header">
+    <div class="section-eyebrow">03 — Signal Theory</div>
+    <div class="section-title">Brainwave Frequency Bands</div>
+    <div class="section-desc">EEG signals are decomposed into frequency bands, each associated with different mental states.</div>
+  </div>
+
+  <div class="wave-viz">
+    <div class="wave-title">Live Simulated Brainwave Patterns</div>
+    <div class="waves-container">
+      <div class="wave-row">
+        <div class="wave-label" style="color:#a78bfa">Delta</div>
+        <div class="wave-canvas-wrap"><canvas id="c-delta" class="wave-line"></canvas></div>
+        <div class="wave-info">0.5 – 4 Hz</div>
+      </div>
+      <div class="wave-row">
+        <div class="wave-label" style="color:#5b8fff">Theta</div>
+        <div class="wave-canvas-wrap"><canvas id="c-theta" class="wave-line"></canvas></div>
+        <div class="wave-info">4 – 8 Hz</div>
+      </div>
+      <div class="wave-row">
+        <div class="wave-label" style="color:#39e0a0">Alpha</div>
+        <div class="wave-canvas-wrap"><canvas id="c-alpha" class="wave-line"></canvas></div>
+        <div class="wave-info">8 – 13 Hz</div>
+      </div>
+      <div class="wave-row">
+        <div class="wave-label" style="color:#fbbf24">Beta</div>
+        <div class="wave-canvas-wrap"><canvas id="c-beta" class="wave-line"></canvas></div>
+        <div class="wave-info">13 – 30 Hz</div>
+      </div>
+      <div class="wave-row">
+        <div class="wave-label" style="color:#f87171">Gamma</div>
+        <div class="wave-canvas-wrap"><canvas id="c-gamma" class="wave-line"></canvas></div>
+        <div class="wave-info">30 – 100 Hz</div>
+      </div>
+    </div>
+  </div>
+
+  <table class="bands-table">
+    <thead>
+      <tr><th>Band</th><th>Frequency</th><th>Mental State</th><th>Applications</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="band-color" style="background:#a78bfa"></span><span class="band-name">Delta</span></td><td>0.5 – 4 Hz</td><td>Deep sleep, unconscious</td><td>Sleep disorder detection</td></tr>
+      <tr><td><span class="band-color" style="background:#5b8fff"></span><span class="band-name">Theta</span></td><td>4 – 8 Hz</td><td>Drowsiness, meditation, creativity</td><td>Fatigue monitoring, drowsy driving alert</td></tr>
+      <tr><td><span class="band-color" style="background:#39e0a0"></span><span class="band-name">Alpha</span></td><td>8 – 13 Hz</td><td>Relaxed awareness, eyes closed</td><td>Stress/relaxation monitor, neurofeedback</td></tr>
+      <tr><td><span class="band-color" style="background:#fbbf24"></span><span class="band-name">Beta</span></td><td>13 – 30 Hz</td><td>Active thinking, focus, alertness</td><td>Cognitive load tracking, focus apps</td></tr>
+      <tr><td><span class="band-color" style="background:#f87171"></span><span class="band-name">Gamma</span></td><td>30 – 100 Hz</td><td>High-level processing, learning</td><td>Epilepsy detection, memory research</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PREPROCESSING -->
+<div class="section" id="preprocessing">
+  <div class="section-header">
+    <div class="section-eyebrow">04 — Signal Processing</div>
+    <div class="section-title">Preprocessing Pipeline</div>
+    <div class="section-desc">Raw EEG is noisy. These steps clean it before any analysis.</div>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Bandpass Filter (0.5 – 40 Hz)</div>
+        <div class="step-body">Removes DC drift below 0.5 Hz and high-frequency muscle/EMG noise above 40 Hz. Use a 4th-order Butterworth filter. Implemented with <code>scipy.signal.butter()</code> in Python.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Notch Filter (50 Hz or 60 Hz)</div>
+        <div class="step-body">Suppresses power line interference (50 Hz in Bangladesh/South Asia). Apply a narrow notch (Q=30) at the mains frequency using <code>scipy.signal.iirnotch()</code>.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Artifact Removal</div>
+        <div class="step-body">Remove eye blink artifacts (large amplitude spikes in the frontal channel) using amplitude thresholding or Independent Component Analysis (ICA). Use <code>MNE-Python</code> or EEGLAB for automated ICA.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">Epoching / Segmentation</div>
+        <div class="step-body">Cut continuous signal into fixed-length windows (e.g., 1-second epochs with 50% overlap). Each epoch becomes one sample for ML. Common: 256 samples @ 256 Hz = 1 second.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title">Feature Extraction</div>
+        <div class="step-body">Compute band power via Welch's PSD, Hjorth parameters (activity, mobility, complexity), statistical features (mean, variance, skewness), or wavelet coefficients for time-frequency features.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ML -->
+<div class="section" id="ml">
+  <div class="section-header">
+    <div class="section-eyebrow">05 — Machine Learning</div>
+    <div class="section-title">Analysis & Classification Models</div>
+    <div class="section-desc">Choose a model based on your task complexity and available labeled data.</div>
+  </div>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon green">📊</div>
+      <div class="card-title">SVM (Support Vector Machine)</div>
+      <div class="card-body">Best for small datasets with hand-crafted features. Highly effective for binary EEG classification (e.g., eyes open vs. closed, relaxed vs. stressed). Use RBF kernel.</div>
+      <div class="card-tags"><span class="tag green">Easy</span><span class="tag blue">Binary</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon orange">🌳</div>
+      <div class="card-title">Random Forest</div>
+      <div class="card-body">Works well with multi-class EEG tasks and mixed feature types. Resistant to overfitting. Excellent baseline model for stress detection and emotion recognition.</div>
+      <div class="card-tags"><span class="tag green">Easy</span><span class="tag orange">Multi-class</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon blue">🧮</div>
+      <div class="card-title">1D-CNN</div>
+      <div class="card-body">Convolutional Neural Network operating on raw EEG time series. Automatically learns spatial-temporal features. Requires ~500+ labeled samples per class to generalize.</div>
+      <div class="card-tags"><span class="tag orange">Intermediate</span><span class="tag purple">Deep Learning</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon purple">🔄</div>
+      <div class="card-title">LSTM / GRU</div>
+      <div class="card-body">Recurrent networks capture temporal dependencies in EEG sequences. Best for event detection, seizure prediction, or motor imagery recognition where timing matters.</div>
+      <div class="card-tags"><span class="tag orange">Intermediate</span><span class="tag purple">Temporal</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon blue">⚡</div>
+      <div class="card-title">EEGNet</div>
+      <div class="card-body">Lightweight CNN architecture specifically designed for EEG-BCI tasks. Only 2 depthwise convolution layers. State-of-the-art for Motor Imagery and P300 detection with minimal data.</div>
+      <div class="card-tags"><span class="tag green">BCI Optimized</span><span class="tag purple">SOTA</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon green">🎯</div>
+      <div class="card-title">TinyML (On-Device)</div>
+      <div class="card-body">Deploy a quantized model directly on ESP32 using TensorFlow Lite Micro. Enables edge inference without cloud dependency — critical for real-time wearable applications.</div>
+      <div class="card-tags"><span class="tag orange">Advanced</span><span class="tag blue">Edge AI</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- APPLICATIONS -->
+<div class="section" id="applications">
+  <div class="section-header">
+    <div class="section-eyebrow">06 — Use Cases</div>
+    <div class="section-title">Project Application Ideas</div>
+  </div>
+  <div class="app-list">
+    <div class="app-card">
+      <div class="app-card-top">
+        <div class="app-emoji">😌</div>
+        <div>
+          <div class="app-name">Stress Detector</div>
+          <span class="app-diff diff-easy">Beginner</span>
+        </div>
+      </div>
+      <div class="app-desc">Use NeuroSky + ESP32. Alpha/Beta ratio → Random Forest classifier → Flask dashboard shows live stress score.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-card-top">
+        <div class="app-emoji">💡</div>
+        <div>
+          <div class="app-name">Smart Light Control</div>
+          <span class="app-diff diff-easy">Beginner</span>
+        </div>
+      </div>
+      <div class="app-desc">Map left/right motor imagery patterns to MQTT commands. Turn on/off IoT lights via brain commands.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-card-top">
+        <div class="app-emoji">😴</div>
+        <div>
+          <div class="app-name">Drowsy Driver Alert</div>
+          <span class="app-diff diff-med">Intermediate</span>
+        </div>
+      </div>
+      <div class="app-desc">Monitor theta/alpha rise in real-time. Trigger a buzzer or phone notification when drowsiness threshold exceeded.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-card-top">
+        <div class="app-emoji">🎮</div>
+        <div>
+          <div class="app-name">Brain-Controlled Game</div>
+          <span class="app-diff diff-med">Intermediate</span>
+        </div>
+      </div>
+      <div class="app-desc">Use concentration level from NeuroSky to control a Python Pygame character. Classic first BCI project.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-card-top">
+        <div class="app-emoji">🏥</div>
+        <div>
+          <div class="app-name">Seizure Early Warning</div>
+          <span class="app-diff diff-hard">Advanced</span>
+        </div>
+      </div>
+      <div class="app-desc">Monitor gamma/beta band spikes. LSTM classifier detects pre-ictal patterns and alerts caregivers via cloud notification.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-card-top">
+        <div class="app-emoji">🧘</div>
+        <div>
+          <div class="app-name">Neurofeedback Trainer</div>
+          <span class="app-diff diff-med">Intermediate</span>
+        </div>
+      </div>
+      <div class="app-desc">Show real-time alpha bar chart on a screen. User learns to consciously increase relaxation through visual biofeedback.</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<div class="section" id="tools">
+  <div class="section-header">
+    <div class="section-eyebrow">07 — Software Ecosystem</div>
+    <div class="section-title">Tools & Libraries</div>
+  </div>
+  <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);overflow:hidden;">
+    <table class="tools-table">
+      <thead><tr><th>Tool</th><th>Category</th><th>Use For</th><th>License</th></tr></thead>
+      <tbody>
+        <tr><td><div class="tool-name">MNE-Python</div><div class="tool-type">Python Library</div></td><td><span class="tag blue">Processing</span></td><td>EEG preprocessing, ICA, epoching, PSD, visualization — the industry standard</td><td><span class="tag green">Free / BSD</span></td></tr>
+        <tr><td><div class="tool-name">OpenBCI GUI</div><div class="tool-type">Desktop App</div></td><td><span class="tag purple">Acquisition</span></td><td>Real-time EEG visualization, filter controls, data recording from OpenBCI hardware</td><td><span class="tag green">Free / OSS</span></td></tr>
+        <tr><td><div class="tool-name">EEGLAB</div><div class="tool-type">MATLAB Toolbox</div></td><td><span class="tag orange">Analysis</span></td><td>ICA decomposition, event-related potential analysis, spectral analysis</td><td><span class="tag green">Free</span></td></tr>
+        <tr><td><div class="tool-name">scikit-learn</div><div class="tool-type">Python Library</div></td><td><span class="tag blue">ML</span></td><td>SVM, Random Forest, k-NN classifiers — your first ML pipeline for EEG classification</td><td><span class="tag green">Free / BSD</span></td></tr>
+        <tr><td><div class="tool-name">TensorFlow / Keras</div><div class="tool-type">Python Library</div></td><td><span class="tag blue">Deep Learning</span></td><td>1D-CNN, LSTM, EEGNet architectures; TF Lite for ESP32 edge deployment</td><td><span class="tag green">Free / Apache</span></td></tr>
+        <tr><td><div class="tool-name">Brainflow</div><div class="tool-type">Python / C++ SDK</div></td><td><span class="tag purple">Acquisition</span></td><td>Unified API for 30+ EEG boards (NeuroSky, OpenBCI, Muse, etc.) with built-in filters</td><td><span class="tag green">Free / MIT</span></td></tr>
+        <tr><td><div class="tool-name">MQTT + Mosquitto</div><div class="tool-type">Protocol / Broker</div></td><td><span class="tag orange">IoT</span></td><td>Lightweight publish/subscribe messaging for streaming EEG data from ESP32 to server</td><td><span class="tag green">Free / OSS</span></td></tr>
+        <tr><td><div class="tool-name">Flask / FastAPI</div><div class="tool-type">Python Web</div></td><td><span class="tag blue">Backend</span></td><td>REST API or WebSocket server to receive, store, and serve EEG data to dashboards</td><td><span class="tag green">Free / MIT</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CODE -->
+<div class="section" id="code">
+  <div class="section-header">
+    <div class="section-eyebrow">08 — Implementation</div>
+    <div class="section-title">Sample Code Snippets</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python — EEG Bandpass + Band Power Extraction</span>
+      <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+    </div>
+    <pre><code><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">from</span> scipy.signal <span class="kw">import</span> butter, filtfilt, welch
+
+<span class="fn">def</span> <span class="fn">bandpass_filter</span>(data, lowcut, highcut, fs, order=<span class="num">4</span>):
+    <span class="str">"""Apply Butterworth bandpass filter to EEG data."""</span>
+    nyq = <span class="num">0.5</span> * fs
+    b, a = butter(order, [lowcut / nyq, highcut / nyq], btype=<span class="str">'band'</span>)
+    <span class="kw">return</span> filtfilt(b, a, data)
+
+<span class="fn">def</span> <span class="fn">extract_band_powers</span>(epoch, fs=<span class="num">250</span>):
+    <span class="str">"""Compute power in each EEG frequency band (Welch method)."""</span>
+    freqs, psd = welch(epoch, fs=fs, nperseg=fs)
+    bands = {
+        <span class="str">'delta'</span>: (<span class="num">0.5</span>, <span class="num">4</span>), <span class="str">'theta'</span>: (<span class="num">4</span>, <span class="num">8</span>),
+        <span class="str">'alpha'</span>: (<span class="num">8</span>, <span class="num">13</span>), <span class="str">'beta'</span>: (<span class="num">13</span>, <span class="num">30</span>), <span class="str">'gamma'</span>: (<span class="num">30</span>, <span class="num">45</span>)
+    }
+    powers = {}
+    <span class="kw">for</span> band, (lo, hi) <span class="kw">in</span> bands.items():
+        idx = np.logical_and(freqs >= lo, freqs <= hi)
+        powers[band] = np.trapz(psd[idx], freqs[idx])  <span class="cm"># area under PSD</span>
+    <span class="kw">return</span> powers
+
+<span class="cm"># Example usage</span>
+raw_eeg = np.random.randn(<span class="num">250</span>)   <span class="cm"># 1 second at 250 Hz</span>
+filtered = bandpass_filter(raw_eeg, <span class="num">0.5</span>, <span class="num">40</span>, fs=<span class="num">250</span>)
+features = extract_band_powers(filtered)
+print(features)
+<span class="cm"># {'delta': 0.42, 'theta': 0.18, 'alpha': 0.35, 'beta': 0.21, 'gamma': 0.08}</span></code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python — MQTT EEG Publisher (ESP32 side via MicroPython)</span>
+      <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+    </div>
+    <pre><code><span class="kw">import</span> network, time, json
+<span class="kw">from</span> umqtt.simple <span class="kw">import</span> MQTTClient
+
+SSID = <span class="str">"YourWiFi"</span>
+PASSWORD = <span class="str">"YourPass"</span>
+MQTT_BROKER = <span class="str">"192.168.1.100"</span>
+TOPIC = <span class="str">b"eeg/raw"</span>
+
+<span class="fn">def</span> <span class="fn">connect_wifi</span>():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(<span class="kw">True</span>)
+    wlan.connect(SSID, PASSWORD)
+    <span class="kw">while not</span> wlan.isconnected():
+        time.sleep(<span class="num">0.5</span>)
+
+connect_wifi()
+client = MQTTClient(<span class="str">"eeg_node"</span>, MQTT_BROKER)
+client.connect()
+
+<span class="kw">while True</span>:
+    <span class="cm"># Read EEG value from ADC (e.g., ADS1115 on I2C)</span>
+    eeg_value = read_adc()
+    payload = json.dumps({<span class="str">"t"</span>: time.time(), <span class="str">"v"</span>: eeg_value})
+    client.publish(TOPIC, payload)
+    time.sleep_ms(<span class="num">4</span>)  <span class="cm"># 250 Hz sample rate</span></code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python — Train SVM Stress Classifier</span>
+      <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+    </div>
+    <pre><code><span class="kw">from</span> sklearn.svm <span class="kw">import</span> SVC
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> StandardScaler
+<span class="kw">from</span> sklearn.pipeline <span class="kw">import</span> make_pipeline
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> cross_val_score
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># X: shape (n_epochs, n_features) — e.g., 5 band powers per epoch</span>
+<span class="cm"># y: 0 = relaxed, 1 = stressed</span>
+X = np.load(<span class="str">"eeg_features.npy"</span>)
+y = np.load(<span class="str">"labels.npy"</span>)
+
+model = make_pipeline(
+    StandardScaler(),
+    SVC(kernel=<span class="str">'rbf'</span>, C=<span class="num">10</span>, gamma=<span class="str">'scale'</span>, probability=<span class="kw">True</span>)
+)
+
+scores = cross_val_score(model, X, y, cv=<span class="num">5</span>, scoring=<span class="str">'accuracy'</span>)
+print(<span class="str">f"Accuracy: {scores.mean():.2%} ± {scores.std():.2%}"</span>)
+<span class="cm"># Accuracy: 84.5% ± 3.2%</span>
+
+model.fit(X, y)  <span class="cm"># Train on full dataset</span>
+<span class="cm"># model.predict_proba(new_features) → [relaxed_prob, stress_prob]</span></code></pre>
+  </div>
+</div>
+
+<!-- ROADMAP -->
+<div class="section" id="roadmap">
+  <div class="section-header">
+    <div class="section-eyebrow">09 — Getting Started</div>
+    <div class="section-title">Your Project Roadmap</div>
+    <div class="section-desc">A practical step-by-step path from zero to a working EEG-IoT system.</div>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">🛒 Buy a NeuroSky MindWave (or use OpenBCI if budget allows)</div>
+        <div class="step-body">Start with a NeuroSky. Install the ThinkGear connector SDK. Verify raw EEG streaming works to your PC via Bluetooth before adding any IoT layer.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">🐍 Set up Python environment with MNE + BrainFlow</div>
+        <div class="step-body">Install: <code>pip install mne brainflow scipy scikit-learn matplotlib</code>. Use BrainFlow's Python API to connect to your headset and stream live data to a CSV file.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">⚙️ Build the signal processing pipeline</div>
+        <div class="step-body">Apply bandpass (0.5–40 Hz), notch (50 Hz), and epoch the signal into 1-second windows. Extract the 5 band power features per epoch. Save as a feature matrix.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">🏷️ Collect labeled data for your task</div>
+        <div class="step-body">Record 5–10 minutes of EEG per class (e.g., eyes open = 0, eyes closed = 1). Label each epoch. Aim for at least 200 epochs per class. Use balanced classes.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title">🤖 Train and evaluate an SVM or Random Forest</div>
+        <div class="step-body">Start simple with scikit-learn SVM. Achieve baseline accuracy. Then experiment with 1D-CNN if performance is insufficient. Use 5-fold cross-validation.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <div class="step-title">📡 Add IoT layer with ESP32 + MQTT</div>
+        <div class="step-body">Write a MicroPython script on the ESP32 that receives serial EEG data and publishes to an MQTT broker. Subscribe from a Flask server on your PC or Raspberry Pi.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <div class="step-title">📊 Build a live dashboard or trigger IoT actions</div>
+        <div class="step-body">Use Flask + Chart.js to display real-time band power bars, or connect the classifier output to GPIO pins that control relays, LEDs, or home automation systems.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</main>
+</div><!-- /app -->
+
+<script>
+// Theme toggle
+(function(){
+  const t=document.querySelector('[data-theme-toggle]'),r=document.documentElement;
+  let d='dark';
+  r.setAttribute('data-theme',d);
+  if(t) t.addEventListener('click',()=>{
+    d=d==='dark'?'light':'dark';
+    r.setAttribute('data-theme',d);
+  });
+})();
+
+// Nav scroll
+function scrollTo(id){
+  const el=document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// Copy code
+function copyCode(btn){
+  const code=btn.closest('.code-block').querySelector('code').innerText;
+  navigator.clipboard.writeText(code).then(()=>{
+    btn.textContent='✅ Copied!';
+    setTimeout(()=>btn.innerHTML='📋 Copy',2000);
+  });
+}
+
+// Brainwave Visualizer
+const waveConfigs = [
+  {id:'c-delta', freq:2, amp:0.85, color:'#a78bfa'},
+  {id:'c-theta', freq:6, amp:0.7, color:'#5b8fff'},
+  {id:'c-alpha', freq:10, amp:0.6, color:'#39e0a0'},
+  {id:'c-beta', freq:20, amp:0.45, color:'#fbbf24'},
+  {id:'c-gamma', freq:40, amp:0.3, color:'#f87171'},
+];
+
+let phase = 0;
+const canvases = waveConfigs.map(cfg => {
+  const canvas = document.getElementById(cfg.id);
+  const ctx = canvas.getContext('2d');
+  return { canvas, ctx, ...cfg };
+});
+
+function drawWaves() {
+  canvases.forEach(({canvas, ctx, freq, amp, color}) => {
+    const W = canvas.offsetWidth;
+    const H = canvas.offsetHeight;
+    canvas.width = W;
+    canvas.height = H;
+    ctx.clearRect(0, 0, W, H);
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    const points = 200;
+    for(let i=0;i<=points;i++){
+      const x = (i/points)*W;
+      const t = (i/points)*4*Math.PI + phase*freq*0.1;
+      const noise = (Math.random()-0.5)*0.08;
+      const y = H/2 + Math.sin(t)*amp*(H/2*0.8) + noise*H;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  });
+  phase += 0.05;
+  requestAnimationFrame(drawWaves);
+}
+drawWaves();
+</script>
+
+</body>
+</html>
